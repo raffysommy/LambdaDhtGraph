@@ -14,8 +14,13 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import redis.clients.jedis.Jedis;
+
+
 
 public class LambdaFunctionHandler implements RequestStreamHandler {
+	private Jedis jedis = new Jedis("159.122.181.42",31265);
+
 	/*
 	**
     * The main entry point for our application.
@@ -44,12 +49,19 @@ public class LambdaFunctionHandler implements RequestStreamHandler {
            JSONObject params = requestJson.getJSONObject("queryStringParameters");
            Long start=params.getLong("start");
            Long end=params.getLong("end");
-           AthenaClient ac=new AthenaClient();           
-           ObjectWriter ow = new ObjectMapper().writer();
-           String json = ow.writeValueAsString(ac.search(start, end));
-           responseBody.put("result", json);
-           responseJson.put("statusCode", "200");
-           ac.dispose();
+           String cache=jedis.get(start.toString()+end.toString());
+	 	   if(cache!=null&&!cache.isEmpty()&&!cache.equals("{}")&&!cache.equals("[]")) {
+	 			  
+	 	   }else {
+	           AthenaClient ac=new AthenaClient();           
+	           ObjectWriter ow = new ObjectMapper().writer();
+	           cache = ow.writeValueAsString(ac.search(start, end));
+	           jedis.set(start.toString()+end.toString(), cache);
+	           ac.dispose();
+	 	   }
+	 	   jedis.close();
+           responseBody.put("result", cache);
+           responseJson.put("statusCode", "200");           
        } catch (JSONException e) {
            responseBody.put("status", "error");
            responseBody.put("message", "You must define start timestamp and end timestamp.");

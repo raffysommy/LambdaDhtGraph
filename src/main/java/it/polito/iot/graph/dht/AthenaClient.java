@@ -9,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+
+
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
 /**
@@ -24,7 +27,6 @@ public class AthenaClient
 
   private Connection connection;
   private AWSCredentials cred=new AWSCredentialsProviderChain( DefaultAWSCredentialsProviderChain.getInstance()).getCredentials();
-
   public AthenaClient()
   {
 	  Properties info = new Properties();
